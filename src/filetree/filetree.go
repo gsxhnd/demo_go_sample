@@ -330,3 +330,24 @@ func (f *FileNode) GetAllDirs() []string {
 
 	return dirs
 }
+
+// CountDirs returns the number of directories in the tree
+func (f *FileNode) CountDirs() int {
+	count := 0
+	var traverse func(node *FileNode)
+
+	traverse = func(node *FileNode) {
+		if node.IsDir {
+			count++
+		}
+		for _, child := range node.Children {
+			traverse(child)
+		}
+	}
+
+	for _, child := range f.Children {
+		traverse(child)
+	}
+
+	return count
+}

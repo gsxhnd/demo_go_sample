@@ -771,6 +771,93 @@ func TestGetAllDirs(t *testing.T) {
 	assert.Len(t, dirs, 3, "should have 3 directories")
 }
 
+func TestCountDirs(t *testing.T) {
+	tests := []struct {
+		name     string
+		tree     *FileNode
+		expected int
+	}{
+		{
+			name: "empty root",
+			tree: &FileNode{
+				Name:     "root",
+				IsDir:    true,
+				Children: []*FileNode{},
+			},
+			expected: 0,
+		},
+		{
+			name: "only files",
+			tree: &FileNode{
+				Name:  "root",
+				IsDir: true,
+				Children: []*FileNode{
+					{Name: "readme.md", IsDir: false, FileID: 1001},
+					{Name: "main.go", IsDir: false, FileID: 1002},
+				},
+			},
+			expected: 0,
+		},
+		{
+			name: "multiple directories",
+			tree: &FileNode{
+				Name:  "root",
+				IsDir: true,
+				Children: []*FileNode{
+					{
+						Name:     "docs",
+						IsDir:    true,
+						Children: []*FileNode{},
+					},
+					{
+						Name:  "src",
+						IsDir: true,
+						Children: []*FileNode{
+							{Name: "pkg", IsDir: true, Children: []*FileNode{}},
+						},
+					},
+				},
+			},
+			expected: 3,
+		},
+		{
+			name: "nested directories with files",
+			tree: &FileNode{
+				Name:  "root",
+				IsDir: true,
+				Children: []*FileNode{
+					{
+						Name:  "src",
+						IsDir: true,
+						Children: []*FileNode{
+							{Name: "main.go", IsDir: false, FileID: 1001},
+							{
+								Name:  "pkg",
+								IsDir: true,
+								Children: []*FileNode{
+									{
+										Name:     "utils",
+										IsDir:    true,
+										Children: []*FileNode{},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: 3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			count := tt.tree.CountDirs()
+			assert.Equal(t, tt.expected, count)
+		})
+	}
+}
+
 func TestSerialize(t *testing.T) {
 	tree := &FileNode{
 		Name:  "root",
